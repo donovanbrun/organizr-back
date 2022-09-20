@@ -8,7 +8,7 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "Envent")
+@Table(name = "Event")
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString

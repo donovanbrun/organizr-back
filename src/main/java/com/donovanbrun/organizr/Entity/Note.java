@@ -18,6 +18,7 @@ public class Note {
     private Integer id;
     private String userId;
     private String name;
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     public Note(String userId, String name, String content) {
