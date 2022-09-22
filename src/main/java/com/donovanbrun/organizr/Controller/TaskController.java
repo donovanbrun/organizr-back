@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(path = "api/task")
@@ -48,7 +49,7 @@ public class TaskController {
     }
 
     @DeleteMapping(path = "delete/{taskId}")
-    public ResponseEntity<String> deleteTask(@PathVariable Integer taskId) {
+    public ResponseEntity<String> deleteTask(@PathVariable UUID taskId) {
         try {
             this.taskService.deleteTask(taskId);
             return new ResponseEntity<String>("Task " + taskId + " deleted.", HttpStatus.ACCEPTED);

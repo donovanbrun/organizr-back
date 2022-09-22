@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class NoteService {
@@ -44,11 +45,11 @@ public class NoteService {
         else throw new RuntimeException("Note doesn't exist");
     }
 
-    public Optional<Note> getNotesById(Integer id) {
+    public Optional<Note> getNotesById(UUID id) {
         return this.noteRepository.findById(id);
     }
 
-    public void deleteNote(Integer noteId) {
+    public void deleteNote(UUID noteId) {
         this.noteRepository.deleteById(noteId);
     }
 }

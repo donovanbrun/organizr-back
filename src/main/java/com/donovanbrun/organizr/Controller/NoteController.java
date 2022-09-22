@@ -10,6 +10,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(path = "api/note")
@@ -38,7 +39,7 @@ public class NoteController {
     }
 
     @GetMapping("{id}")
-    public Optional<Note> getNoteById(@PathVariable Integer id) {
+    public Optional<Note> getNoteById(@PathVariable UUID id) {
         return noteService.getNotesById(id);
     }
 
@@ -66,7 +67,7 @@ public class NoteController {
     }
 
     @DeleteMapping("{noteId}")
-    public void deleteNote(@PathVariable Integer noteId) {
+    public void deleteNote(@PathVariable UUID noteId) {
         this.noteService.deleteNote(noteId);
     }
 }

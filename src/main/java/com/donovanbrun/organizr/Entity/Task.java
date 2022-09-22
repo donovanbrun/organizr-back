@@ -1,22 +1,23 @@
 package com.donovanbrun.organizr.Entity;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 @Table(name = "Task")
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@Getter
+@Setter
 public class Task {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue()
+    private UUID id;
 
     private String userId;
     private String name;
@@ -24,29 +25,8 @@ public class Task {
 
     @Column(columnDefinition = "TEXT")
     private String description;
-    private boolean finished;
+    private String status;
 
-    public Integer getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public Date getDeadline() {
-        return deadline;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public boolean isFinished() {
-        return finished;
-    }
+    private Date creationDate;
+    private Date modificationDate;
 }
