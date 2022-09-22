@@ -1,40 +1,25 @@
 package com.donovanbrun.organizr.Entity;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 @Table(name = "Event")
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@Getter
+@Setter
 public class Event {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue()
+    private UUID id;
 
     private String userId;
     private String name;
     private Date date;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Date getDate() {
-        return date;
-    }
 }

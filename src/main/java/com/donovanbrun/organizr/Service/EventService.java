@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class EventService {
@@ -38,7 +39,7 @@ public class EventService {
         else throw new RuntimeException("Event doesn't exist");
     }
 
-    public void deleteEvent(Integer eventId) {
+    public void deleteEvent(UUID eventId) {
         if (this.eventRepository.findById(eventId).isPresent()) {
             this.eventRepository.deleteById(eventId);
         }
