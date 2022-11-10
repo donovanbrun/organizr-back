@@ -1,5 +1,6 @@
 package com.donovanbrun.organizr.Entity;
 
+import com.sun.istack.NotNull;
 import lombok.*;
 
 import javax.persistence.*;
@@ -15,7 +16,7 @@ import java.util.UUID;
 public class Note {
 
     @Id
-    @GeneratedValue()
+    @NotNull
     private UUID id;
 
     private String userId;

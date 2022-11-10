@@ -27,12 +27,6 @@ public class NoteController {
     @ResponseStatus(code = HttpStatus.OK, reason = "OK")
     public void getStatus() {}
 
-    // TODO Remove this route after dev
-    @GetMapping()
-    public List<Note> getNotes() {
-        return noteService.getNotes();
-    }
-
     @GetMapping("user/{username}")
     public List<Note> getNote(@PathVariable String username) {
         return noteService.getNotesByUsername(username);
@@ -43,7 +37,6 @@ public class NoteController {
         return noteService.getNotesById(id);
     }
 
-    // TODO change username to something more security like cookies
     @PostMapping()
     public void createNote(@RequestBody ReceivedNote body) {
         try {
@@ -57,6 +50,7 @@ public class NoteController {
 
     @PutMapping()
     public void saveNote(@RequestBody Note note) {
+        System.out.println(note);
         try {
             this.noteService.saveNote(note);
         }
