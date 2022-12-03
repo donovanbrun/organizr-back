@@ -1,5 +1,6 @@
 package com.donovanbrun.organizr.Entity;
 
+import com.donovanbrun.organizr.dto.NoteDTO;
 import com.sun.istack.NotNull;
 import lombok.*;
 
@@ -19,14 +20,15 @@ public class Note {
     @NotNull
     private UUID id;
 
-    private String userId;
+    @ManyToOne
+    private User user;
     private String name;
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    public Note(String userId, String name, String content) {
-        this.userId = userId;
-        this.name = name;
-        this.content = content;
+    public Note(NoteDTO noteDTO) {
+        this.id = noteDTO.getId();
+        this.name = noteDTO.getName();
+        this.content = noteDTO.getContent();
     }
 }

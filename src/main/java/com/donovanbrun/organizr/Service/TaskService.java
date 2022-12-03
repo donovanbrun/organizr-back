@@ -1,52 +1,183 @@
 package com.donovanbrun.organizr.Service;
 
+import com.donovanbrun.organizr.Entity.Tag;
 import com.donovanbrun.organizr.Entity.Task;
+import com.donovanbrun.organizr.Entity.User;
+import com.donovanbrun.organizr.Repository.TagRepository;
 import com.donovanbrun.organizr.Repository.TaskRepository;
+import com.donovanbrun.organizr.dto.TaskDTO;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.*;
 
 @Service
 public class TaskService {
 
     private TaskRepository taskRepository;
+    private UserService userService;
+    private TagRepository tagRepository;
 
     @Autowired
-    public TaskService(TaskRepository taskRepository) {
+    public TaskService(TaskRepository taskRepository, UserService userService, TagRepository tagRepository) {
         this.taskRepository = taskRepository;
+        this.userService = userService;
+        this.tagRepository = tagRepository;
     }
 
-    public List<Task> getTasks() {
-        return this.taskRepository.findAll();
+    public List<TaskDTO> getTasksByUserId(UUID userId) {
+        User u = userService.getUserById(userId);
+        if (u != null) {
+            List<Task> tasks = this.taskRepository.getTasksByUser(u);
+            ArrayList<TaskDTO> retTasks = new ArrayList<>(tasks.size());
+
+            for (Task task : tasks) {
+                retTasks.add(new TaskDTO(task));
+            }
+            return retTasks;
+        }
+        else throw new RuntimeException();
     }
 
-    public List<Task> getTasksByUserId(String userId) {
-        return this.taskRepository.getTasksByUserId(userId);
-    }
-
-    public Task addTask(Task task) {
+    public TaskDTO addTask(TaskDTO taskDTO, UUID userId) {
+        Task task = new Task(taskDTO);
         if (task.getCreationDate() == null) task.setCreationDate(new Date());
         if (task.getModificationDate() == null) task.setModificationDate(new Date());
-        return this.taskRepository.save(task);
+        User u = userService.getUserById(userId);
+
+        if (u != null) {
+            task.setUser(u);
+
+            for (String tag : taskDTO.getTags()) {
+                this.addTag(task.getId(), tag, task.getUser().getId());
+            }
+            
+            Task t = this.taskRepository.save(task);
+            return new TaskDTO(t);
+        }
+        else throw new RuntimeException();
     }
 
-    public Task updateTask(Task task) throws RuntimeException {
-        Task t;
-        if (this.taskRepository.findById(task.getId()).isPresent()) {
-            if (task.getModificationDate() == null) task.setModificationDate(new Date());
-            t = this.taskRepository.save(task);
-            return t;
+    public TaskDTO updateTask(TaskDTO taskDTO, UUID userId) throws RuntimeException {
+        Task task = new Task(taskDTO);
+        User u = userService.getUserById(userId);
+
+        if (u != null) {
+            if (this.taskRepository.findById(task.getId()).isPresent()) {
+
+                task.setUser(u);
+
+                for (String tag : taskDTO.getTags()) {
+                    tagRepository.findAllByNameAndUser(tag, u).ifPresent((Tag t) -> {
+                        task.getTags().add(t);
+                    });
+                }
+
+                if (task.getModificationDate() == null) task.setModificationDate(new Date());
+                return new TaskDTO(this.taskRepository.save(task));
+            }
+            else throw new RuntimeException("Task doesn't exist");
+        }
+        else throw new RuntimeException("User doesn't exist or doesn't own this task");
+    }
+
+    public void deleteTask(UUID taskId, UUID userId) throws RuntimeException {
+        Optional<Task> optTask = this.taskRepository.findById(taskId);
+        if (optTask.isPresent()) {
+            Task task = optTask.get();
+            if (task.getUser().getId().equals(userId)) {
+                this.taskRepository.deleteById(taskId);
+            }
+            else throw new RuntimeException("User doesn't own this task");
         }
         else throw new RuntimeException("Task doesn't exist");
     }
 
-    public void deleteTask(UUID taskId) throws RuntimeException {
-        if (this.taskRepository.findById(taskId).isPresent()) {
-            this.taskRepository.deleteById(taskId);
+    public void exportCSV(PrintWriter writer, UUID userId) {
+        User u = userService.getUserById(userId);
+        if (u != null) {
+            List<Task> tasks = this.taskRepository.getTasksByUser(u);
+
+            try (CSVPrinter csv = new CSVPrinter(writer, CSVFormat.DEFAULT)) {
+                csv.printRecord("id","name","userId","status","description","deadline","creationDate","modificationDate","tags");
+
+                for (Task task : tasks) {
+                    StringBuilder tags = new StringBuilder();
+                    for (int i = 0; i < task.getTags().size(); i++) {
+                        tags.append(task.getTags().get(i).getName());
+                        if (i != task.getTags().size()-1) tags.append(';');
+                    }
+
+                    csv.printRecord(task.getId(),
+                            task.getName(),
+                            task.getUser().getId(),
+                            task.getStatus(),
+                            task.getDescription(),
+                            task.getDeadline(),
+                            task.getCreationDate(),
+                            task.getModificationDate(),
+                            tags.toString()
+                    );
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        else throw new RuntimeException("Task doesn't exist");
+        else throw new RuntimeException();
+    }
+
+    public void addTag(UUID idTask, String tag, UUID userId) {
+        Optional<Task> optionalTask = taskRepository.findById(idTask);
+
+        if (optionalTask.isPresent()) {
+            Task task = optionalTask.get();
+
+            if (!task.getUser().getId().equals(userId))
+                throw new RuntimeException("Task doesn't belong to this user");
+
+            List<Tag> tags = task.getTags();
+
+            Tag newTag = new Tag();
+            newTag.setName(tag.trim().toLowerCase());
+            newTag.setUser(task.getUser());
+            tagRepository.save(newTag);
+
+            for (Tag t : tags) {
+                if (newTag.getName().equalsIgnoreCase(t.getName()))
+                    throw new RuntimeException("Tag already added");
+            }
+
+            tags.add(newTag);
+            task.setTags(tags);
+            taskRepository.save(task);
+        }
+    }
+
+    public List<Task> getTasksByTags(List<String> tags, UUID userId) {
+        User u = userService.getUserById(userId);
+        if (u != null) {
+            List<Tag> taskTags = tagRepository.findAllByUserAndNameIn(u, tags);
+            List<Task> tasks = taskRepository.getTasksByUser(u);
+            ArrayList<Task> filtered = new ArrayList<>();
+
+            // Do this in SQL not in java
+            // refactor pls
+            for (Task t : tasks) {
+                boolean contains = false;
+                int i = 0;
+                while (i < taskTags.size()) {
+                    contains = t.getTags().contains(taskTags.get(i));
+                    if (!contains) break;
+                    i++;
+                }
+                if (contains) filtered.add(t);
+            }
+            return filtered;
+        }
+        else throw new RuntimeException();
     }
 }

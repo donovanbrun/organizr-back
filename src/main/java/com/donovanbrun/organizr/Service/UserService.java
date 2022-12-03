@@ -2,18 +2,13 @@ package com.donovanbrun.organizr.Service;
 
 import com.donovanbrun.organizr.Entity.User;
 import com.donovanbrun.organizr.Repository.UserRepository;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
+import java.util.UUID;
 
 @Service
-@Slf4j
-public class UserService implements UserDetailsService {
+public class UserService {
 
     private final UserRepository userRepository;
 
@@ -22,11 +17,25 @@ public class UserService implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Objects.requireNonNull(username);
-        User user = userRepository.findUserWithName(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    public User getUserById(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
         return user;
+    }
+
+    public void signin(User user) {
+        userRepository.save(user);
+    }
+
+    public String getUsernameById(UUID userId) {
+        return userRepository.getUsernameById(userId);
+    }
+
+    public String login(User user) {
+        User u = userRepository.findByUsernameAndPassword(user.getUsername(), user.getPassword());
+        if (u != null) {
+            return u.getId().toString();
+        }
+        else throw new RuntimeException("Bad credentials");
     }
 }

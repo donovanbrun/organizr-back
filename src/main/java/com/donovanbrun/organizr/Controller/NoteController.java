@@ -1,8 +1,8 @@
 package com.donovanbrun.organizr.Controller;
 
 import com.donovanbrun.organizr.Entity.Note;
-import com.donovanbrun.organizr.Entity.ReceivedNote;
 import com.donovanbrun.organizr.Service.NoteService;
+import com.donovanbrun.organizr.dto.NoteDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -27,20 +27,20 @@ public class NoteController {
     @ResponseStatus(code = HttpStatus.OK, reason = "OK")
     public void getStatus() {}
 
-    @GetMapping("user/{username}")
-    public List<Note> getNote(@PathVariable String username) {
-        return noteService.getNotesByUsername(username);
+    @GetMapping()
+    public List<NoteDTO> getNote(@RequestHeader UUID userId) {
+        return noteService.getNotesByUser(userId);
     }
 
     @GetMapping("{id}")
-    public Optional<Note> getNoteById(@PathVariable UUID id) {
-        return noteService.getNotesById(id);
+    public NoteDTO getNoteById(@PathVariable UUID id, @RequestHeader UUID userId) {
+        return noteService.getNoteById(userId, id);
     }
 
     @PostMapping()
-    public void createNote(@RequestBody ReceivedNote body) {
+    public void createNote(@RequestBody NoteDTO noteDTO, @RequestHeader UUID userId) {
         try {
-            this.noteService.createNote(body.getUsername(), body.getName(), body.getContent());
+            this.noteService.createNote(userId, noteDTO);
         }
         catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
@@ -49,10 +49,9 @@ public class NoteController {
     }
 
     @PutMapping()
-    public void saveNote(@RequestBody Note note) {
-        System.out.println(note);
+    public void saveNote(@RequestBody NoteDTO noteDTO, @RequestHeader UUID userId) {
         try {
-            this.noteService.saveNote(note);
+            this.noteService.saveNote(userId, noteDTO);
         }
         catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
@@ -61,7 +60,7 @@ public class NoteController {
     }
 
     @DeleteMapping("{noteId}")
-    public void deleteNote(@PathVariable UUID noteId) {
-        this.noteService.deleteNote(noteId);
+    public void deleteNote(@PathVariable UUID noteId, @RequestHeader UUID userId) {
+        this.noteService.deleteNote(userId, noteId);
     }
 }
