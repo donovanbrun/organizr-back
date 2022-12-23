@@ -3,6 +3,7 @@ package com.donovanbrun.organizr.Entity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.UUID;
 
 @Entity
 @Table(name = "Tag")
@@ -10,12 +11,14 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Getter
 @Setter
-@IdClass(TagId.class)
 public class Tag {
 
     @Id
+    @GeneratedValue
+    private UUID id;
+
     private String name;
-    @Id
+
     @ManyToOne
     private User user;
 }

@@ -72,7 +72,7 @@ public class TaskService {
                 task.setUser(u);
 
                 for (String tag : taskDTO.getTags()) {
-                    tagRepository.findAllByNameAndUser(tag, u).ifPresent((Tag t) -> {
+                    tagRepository.findByNameAndUser(tag, u).ifPresent((Tag t) -> {
                         task.getTags().add(t);
                     });
                 }
@@ -139,16 +139,27 @@ public class TaskService {
             if (!task.getUser().getId().equals(userId))
                 throw new RuntimeException("Task doesn't belong to this user");
 
+            tag = tag.trim().toLowerCase();
+
+            Optional<Tag> optionalTag = tagRepository.findByNameAndUser(tag, task.getUser());
+
+            Tag newTag = null;
+
             List<Tag> tags = task.getTags();
 
-            Tag newTag = new Tag();
-            newTag.setName(tag.trim().toLowerCase());
-            newTag.setUser(task.getUser());
-            tagRepository.save(newTag);
+            if (optionalTag.isPresent()) {
+                newTag = optionalTag.get();
 
-            for (Tag t : tags) {
-                if (newTag.getName().equalsIgnoreCase(t.getName()))
-                    throw new RuntimeException("Tag already added");
+                for (Tag t : tags) {
+                    if (newTag.getName().equalsIgnoreCase(t.getName()))
+                        throw new RuntimeException("Tag already added");
+                }
+            }
+            else {
+                newTag = new Tag();
+                newTag.setName(tag);
+                newTag.setUser(task.getUser());
+                tagRepository.save(newTag);
             }
 
             tags.add(newTag);

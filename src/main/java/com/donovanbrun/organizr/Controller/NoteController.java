@@ -1,6 +1,5 @@
 package com.donovanbrun.organizr.Controller;
 
-import com.donovanbrun.organizr.Entity.Note;
 import com.donovanbrun.organizr.Service.NoteService;
 import com.donovanbrun.organizr.dto.NoteDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
