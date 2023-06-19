@@ -22,8 +22,8 @@ public class TaskDTO {
     private String description;
     private String status;
     private Date creationDate;
-    private Date modificationDate;
-    private List<String> tags;
+    private Date updateDate;
+    //private List<String> tags;
 
     public TaskDTO(Task task) {
         this.id = task.getId();
@@ -33,11 +33,12 @@ public class TaskDTO {
         this.description = task.getDescription();
         this.status = task.getStatus();
         this.creationDate = task.getCreationDate();
-        this.modificationDate = task.getModificationDate();
-        this.tags = new ArrayList<>();
+        this.updateDate = task.getUpdateDate();
 
+        /*
+        this.tags = new ArrayList<>();
         for (Tag tag : task.getTags()) {
             tags.add(tag.getName());
-        }
+        }*/
     }
 }

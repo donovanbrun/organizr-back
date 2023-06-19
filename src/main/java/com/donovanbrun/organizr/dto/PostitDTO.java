@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Date;
 import java.util.UUID;
 
 @Getter
@@ -17,10 +18,12 @@ public class PostitDTO {
     private UUID id;
     private UUID userId;
     private String content;
+    private Date creationDate;
 
     public PostitDTO(Postit postit) {
         this.id = postit.getId();
         this.userId = postit.getUser().getId();
         this.content = postit.getContent();
+        this.creationDate = postit.getCreationDate();
     }
 }

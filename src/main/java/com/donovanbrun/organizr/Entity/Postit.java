@@ -10,6 +10,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.util.Date;
 import java.util.UUID;
 
 @Getter
@@ -25,10 +26,12 @@ public class Postit {
     @ManyToOne
     private User user;
     private String content;
+    private Date creationDate;
 
     public Postit(PostitDTO postitDTO, User user) {
         this.id = postitDTO.getId();
         this.user = user;
         this.content = postitDTO.getContent();
+        this.creationDate = postitDTO.getCreationDate();
     }
 }

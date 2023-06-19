@@ -9,6 +9,7 @@ import com.donovanbrun.organizr.dto.TaskDTO;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -46,15 +47,15 @@ public class TaskService {
     public TaskDTO addTask(TaskDTO taskDTO, UUID userId) {
         Task task = new Task(taskDTO);
         if (task.getCreationDate() == null) task.setCreationDate(new Date());
-        if (task.getModificationDate() == null) task.setModificationDate(new Date());
+        if (task.getUpdateDate() == null) task.setUpdateDate(new Date());
         User u = userService.getUserById(userId);
 
         if (u != null) {
             task.setUser(u);
 
-            for (String tag : taskDTO.getTags()) {
-                this.addTag(task.getId(), tag, task.getUser().getId());
-            }
+            /*for (String tag : taskDTO.getTags()) {
+                this.addTag(task, tag);
+            }*/
             
             Task t = this.taskRepository.save(task);
             return new TaskDTO(t);
@@ -68,16 +69,13 @@ public class TaskService {
 
         if (u != null) {
             if (this.taskRepository.findById(task.getId()).isPresent()) {
-
                 task.setUser(u);
 
-                for (String tag : taskDTO.getTags()) {
-                    tagRepository.findByNameAndUser(tag, u).ifPresent((Tag t) -> {
-                        task.getTags().add(t);
-                    });
-                }
+                /*for (String tag : taskDTO.getTags()) {
+                    this.addTag(task, tag);
+                }*/
 
-                if (task.getModificationDate() == null) task.setModificationDate(new Date());
+                task.setUpdateDate(new Date());
                 return new TaskDTO(this.taskRepository.save(task));
             }
             else throw new RuntimeException("Task doesn't exist");
@@ -106,11 +104,11 @@ public class TaskService {
                 csv.printRecord("id","name","userId","status","description","deadline","creationDate","modificationDate","tags");
 
                 for (Task task : tasks) {
-                    StringBuilder tags = new StringBuilder();
+                    /*StringBuilder tags = new StringBuilder();
                     for (int i = 0; i < task.getTags().size(); i++) {
                         tags.append(task.getTags().get(i).getName());
                         if (i != task.getTags().size()-1) tags.append(';');
-                    }
+                    }*/
 
                     csv.printRecord(task.getId(),
                             task.getName(),
@@ -119,8 +117,8 @@ public class TaskService {
                             task.getDescription(),
                             task.getDeadline(),
                             task.getCreationDate(),
-                            task.getModificationDate(),
-                            tags.toString()
+                            task.getUpdateDate()
+                            //tags.toString()
                     );
                 }
             } catch (IOException e) {
@@ -130,45 +128,34 @@ public class TaskService {
         else throw new RuntimeException();
     }
 
-    public void addTag(UUID idTask, String tag, UUID userId) {
-        Optional<Task> optionalTask = taskRepository.findById(idTask);
+    /*private void addTag(Task task, String tag) {
 
-        if (optionalTask.isPresent()) {
-            Task task = optionalTask.get();
+        tag = tag.trim().toLowerCase();
+        Optional<Tag> optionalTag = tagRepository.findByNameAndUser(tag, task.getUser());
+        Tag newTag = null;
+        List<Tag> tags = task.getTags();
 
-            if (!task.getUser().getId().equals(userId))
-                throw new RuntimeException("Task doesn't belong to this user");
+        if (optionalTag.isPresent()) {
+            newTag = optionalTag.get();
 
-            tag = tag.trim().toLowerCase();
-
-            Optional<Tag> optionalTag = tagRepository.findByNameAndUser(tag, task.getUser());
-
-            Tag newTag = null;
-
-            List<Tag> tags = task.getTags();
-
-            if (optionalTag.isPresent()) {
-                newTag = optionalTag.get();
-
-                for (Tag t : tags) {
-                    if (newTag.getName().equalsIgnoreCase(t.getName()))
-                        throw new RuntimeException("Tag already added");
-                }
+            for (Tag t : tags) {
+                if (newTag.getName().equalsIgnoreCase(t.getName()))
+                    return;
             }
-            else {
-                newTag = new Tag();
-                newTag.setName(tag);
-                newTag.setUser(task.getUser());
-                tagRepository.save(newTag);
-            }
-
-            tags.add(newTag);
-            task.setTags(tags);
-            taskRepository.save(task);
         }
-    }
+        else {
+            newTag = new Tag();
+            newTag.setName(tag);
+            newTag.setUser(task.getUser());
+            tagRepository.save(newTag);
+        }
 
-    public List<Task> getTasksByTags(List<String> tags, UUID userId) {
+        tags.add(newTag);
+        task.setTags(tags);
+        taskRepository.save(task);
+    }*/
+
+    /*public List<TaskDTO> getTasksByTags(List<String> tags, UUID userId) {
         User u = userService.getUserById(userId);
         if (u != null) {
             List<Tag> taskTags = tagRepository.findAllByUserAndNameIn(u, tags);
@@ -187,7 +174,21 @@ public class TaskService {
                 }
                 if (contains) filtered.add(t);
             }
-            return filtered;
+            return filtered.stream().map(TaskDTO::new).toList();
+        }
+        else throw new RuntimeException();
+    }*/
+
+    public TaskDTO getTaskById(UUID id, UUID userId) {
+        User u = userService.getUserById(userId);
+        if (u != null) {
+            Optional<Task> optTask = taskRepository.findById(id);
+            if (optTask.isPresent()) {
+                if (optTask.get().getUser().getId() == userId)
+                    return new TaskDTO(optTask.get());
+                else throw new RuntimeException();
+            }
+            else throw new RuntimeException();
         }
         else throw new RuntimeException();
     }

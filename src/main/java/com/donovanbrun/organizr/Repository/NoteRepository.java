@@ -11,4 +11,3 @@ public interface NoteRepository extends JpaRepository<Note, UUID> {
 
     List<Note> findNotesByUser(User user);
 }
-

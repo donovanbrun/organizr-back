@@ -1,6 +1,5 @@
 package com.donovanbrun.organizr.Controller;
 
-import com.donovanbrun.organizr.Entity.Task;
 import com.donovanbrun.organizr.Service.TaskService;
 import com.donovanbrun.organizr.dto.TaskDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +30,11 @@ public class TaskController {
     @GetMapping()
     public List<TaskDTO> getTasksByUserId(@RequestHeader UUID userId) {
         return this.taskService.getTasksByUserId(userId);
+    }
+
+    @GetMapping("get/{id}")
+    public TaskDTO getTaskById(@RequestHeader UUID userId, @PathVariable UUID id) {
+        return this.taskService.getTaskById(id, userId);
     }
 
     @PostMapping(path = "add")
@@ -71,13 +75,17 @@ public class TaskController {
         taskService.exportCSV(servletResponse.getWriter(), userId);
     }
 
+    /*
     @PostMapping(path = "/addTag")
     public void addTag(@RequestParam("idTask") UUID idTask, @RequestParam("tag") String tag, @RequestHeader UUID userId) {
         taskService.addTag(idTask, tag, userId);
     }
+    */
 
-    @GetMapping(path = "tag")
-    public List<Task> getTasksByTags(@RequestBody List<String> tags, @RequestHeader UUID userId) {
+    /*
+    @PostMapping(path = "tag")
+    public List<TaskDTO> getTasksByTags(@RequestBody List<String> tags, @RequestHeader UUID userId) {
         return taskService.getTasksByTags(tags, userId);
     }
+     */
 }

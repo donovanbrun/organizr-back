@@ -32,10 +32,10 @@ public class Task {
     private String status;
 
     private Date creationDate;
-    private Date modificationDate;
+    private Date updateDate;
 
-    @ManyToMany
-    private List<Tag> tags;
+    //@ManyToMany
+    //private List<Tag> tags;
 
     public Task(TaskDTO taskDTO) {
         this.id = taskDTO.getId();
@@ -44,8 +44,8 @@ public class Task {
         this.description = taskDTO.getDescription();
         this.status = taskDTO.getStatus();
         this.creationDate = taskDTO.getCreationDate();
-        this.modificationDate = taskDTO.getModificationDate();
+        this.updateDate = taskDTO.getUpdateDate();
 
-        this.tags = new ArrayList<>();
+        //this.tags = new ArrayList<>();
     }
 }

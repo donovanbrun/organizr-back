@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Date;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -15,11 +16,15 @@ public class NoteDTO {
     private UUID userId;
     private String name;
     private String content;
+    private Date creationDate;
+    private Date updateDate;
 
     public NoteDTO(Note note) {
         this.id = note.getId();
         this.userId = note.getUser().getId();
         this.name = note.getName();
         this.content = note.getContent();
+        this.creationDate = note.getCreationDate();
+        this.updateDate = note.getUpdateDate();
     }
 }

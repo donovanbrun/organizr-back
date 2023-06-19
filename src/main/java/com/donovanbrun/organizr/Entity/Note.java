@@ -5,11 +5,11 @@ import com.sun.istack.NotNull;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.Date;
 import java.util.UUID;
 
 @Entity
 @Table(name = "Note")
-@NoArgsConstructor
 @AllArgsConstructor
 @ToString
 @Getter
@@ -26,9 +26,22 @@ public class Note {
     @Column(columnDefinition = "TEXT")
     private String content;
 
+    private Date creationDate;
+    private Date updateDate;
+
     public Note(NoteDTO noteDTO) {
         this.id = noteDTO.getId();
         this.name = noteDTO.getName();
         this.content = noteDTO.getContent();
+        this.creationDate = noteDTO.getCreationDate();
+        this.updateDate = noteDTO.getUpdateDate();
+    }
+
+    public Note() {
+        this.id = UUID.randomUUID();
+        this.name = "";
+        this.content = "";
+        this.creationDate = new Date();
+        this.updateDate = new Date();
     }
 }

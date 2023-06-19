@@ -7,6 +7,7 @@ import com.donovanbrun.organizr.dto.PostitDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,6 +36,7 @@ public class PostitService {
         User u = userService.getUserById(postitDTO.getUserId());
         if (u != null) {
             Postit postit = new Postit(postitDTO, u);
+            postit.setCreationDate(new Date());
             postitRepository.save(postit);
         }
         else throw new RuntimeException();
