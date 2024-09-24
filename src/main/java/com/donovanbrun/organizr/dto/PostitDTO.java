@@ -16,12 +16,14 @@ import java.util.UUID;
 public class PostitDTO {
 
     private UUID id;
+    private UUID workspaceId;
     private UUID userId;
     private String content;
     private Date creationDate;
 
     public PostitDTO(Postit postit) {
         this.id = postit.getId();
+        this.workspaceId = postit.getWorkspace().getId();
         this.userId = postit.getUser().getId();
         this.content = postit.getContent();
         this.creationDate = postit.getCreationDate();

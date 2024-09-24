@@ -1,21 +1,33 @@
 package com.donovanbrun.organizr.Service;
 
 import com.donovanbrun.organizr.Entity.User;
+import com.donovanbrun.organizr.Entity.UserRole;
 import com.donovanbrun.organizr.Repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.donovanbrun.organizr.dto.AuthenticationResponse;
+import com.donovanbrun.organizr.dto.LoginRequest;
+import com.donovanbrun.organizr.dto.RegisterRequest;
+import com.donovanbrun.organizr.dto.UserDTO;
+import com.donovanbrun.organizr.security.JwtUtil;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class UserService {
+@RequiredArgsConstructor
+public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
-
-    @Autowired
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+    private final AuthenticationManager authenticationManager;
 
     public User getUserById(UUID userId) {
         User user = userRepository.findById(userId)
@@ -27,15 +39,52 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public String getUsernameById(UUID userId) {
-        return userRepository.getUsernameById(userId);
+    public UserDTO getUser(User user) {
+        return UserDTO.builder()
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .build();
     }
 
-    public String login(User user) {
-        User u = userRepository.findByUsernameAndPassword(user.getUsername(), user.getPassword());
-        if (u != null) {
-            return u.getId().toString();
-        }
-        else throw new RuntimeException("Bad credentials");
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findUserByEmail(email);
+    }
+
+    public AuthenticationResponse register(RegisterRequest registrationRequest) {
+        var user = User.builder()
+                .username(registrationRequest.getUsername())
+                .email(registrationRequest.getEmail())
+                .password(passwordEncoder.encode(registrationRequest.getPassword()))
+                .role(UserRole.USER)
+                .build();
+        userRepository.save(user);
+        var token = jwtUtil.generateToken(user);
+        return AuthenticationResponse.builder()
+                .token(token)
+                .build();
+    }
+
+    public AuthenticationResponse login(LoginRequest registrationRequest) {
+        var a = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        registrationRequest.getEmail(),
+                        registrationRequest.getPassword()
+                )
+        );
+
+        var user = userRepository.findUserByEmail(registrationRequest.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        var token = jwtUtil.generateToken(user);
+        return AuthenticationResponse.builder()
+                .token(token)
+                .build();
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        return userRepository.findUserByEmail(email)
+                .orElseThrow();
     }
 }

@@ -1,15 +1,15 @@
 package com.donovanbrun.organizr.Repository;
 
 import com.donovanbrun.organizr.Entity.Postit;
-import org.springframework.data.repository.CrudRepository;
+import com.donovanbrun.organizr.Entity.Workspace;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import com.donovanbrun.organizr.Entity.User;
 
 import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface PostitRepository extends CrudRepository<Postit, UUID> {
+public interface PostitRepository extends JpaRepository<Postit, UUID> {
 
-    List<Postit> getPostitByUser(User user);
+    List<Postit> getPostitByWorkspace(Workspace workspace);
 }

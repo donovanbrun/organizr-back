@@ -1,13 +1,17 @@
 package com.donovanbrun.organizr.Controller;
 
+import com.donovanbrun.organizr.Entity.User;
 import com.donovanbrun.organizr.Service.TaskService;
 import com.donovanbrun.organizr.dto.TaskDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.client.HttpClientErrorException;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -16,76 +20,77 @@ import java.util.UUID;
 @RequestMapping(path = "api/task")
 public class TaskController {
 
-    private TaskService taskService;
+    private final TaskService taskService;
 
     @Autowired
     public TaskController(TaskService taskService) {
         this.taskService = taskService;
     }
 
-    @GetMapping(path = "status")
-    @ResponseStatus(code = HttpStatus.OK, reason = "OK")
-    public void getStatus() {}
-
     @GetMapping()
-    public List<TaskDTO> getTasksByUserId(@RequestHeader UUID userId) {
-        return this.taskService.getTasksByUserId(userId);
+    public ResponseEntity<List<TaskDTO>> getTasksByWorkspace(@AuthenticationPrincipal User user, @RequestParam("workspace") UUID workspaceId) {
+        return ResponseEntity.ok(this.taskService.getTasksByWorkspace(user, workspaceId));
     }
 
-    @GetMapping("get/{id}")
-    public TaskDTO getTaskById(@RequestHeader UUID userId, @PathVariable UUID id) {
-        return this.taskService.getTaskById(id, userId);
-    }
-
-    @PostMapping(path = "add")
-    public ResponseEntity<TaskDTO> addTask(@RequestBody TaskDTO task, @RequestHeader UUID userId) {
-        TaskDTO t = this.taskService.addTask(task, userId);
-        return new ResponseEntity<TaskDTO>(t, HttpStatus.CREATED);
-    }
-
-    @PutMapping(path = "update")
-    public ResponseEntity<TaskDTO> updateTask(@RequestBody TaskDTO task, @RequestHeader UUID userId) {
+    @GetMapping("/{id}")
+    public ResponseEntity getTaskById(@AuthenticationPrincipal User user, @PathVariable UUID id) {
         try {
-            TaskDTO t = this.taskService.updateTask(task, userId);
-            return new ResponseEntity<TaskDTO>(t, HttpStatus.CREATED);
-        }
-        catch (RuntimeException e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+            return ResponseEntity.ok(this.taskService.getTaskById(id, user));
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    @DeleteMapping(path = "delete/{taskId}")
-    public ResponseEntity<String> deleteTask(@PathVariable UUID taskId, @RequestHeader UUID userId) {
+    @PostMapping()
+    public ResponseEntity addTask(@AuthenticationPrincipal User user, @RequestBody TaskDTO task) {
         try {
-            this.taskService.deleteTask(taskId, userId);
-            return new ResponseEntity<String>("Task " + taskId + " deleted.", HttpStatus.ACCEPTED);
+            TaskDTO t = this.taskService.addTask(task, user);
+            return ResponseEntity.status(HttpStatus.CREATED).body(t);
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        catch (RuntimeException e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+    }
+
+    @PutMapping()
+    public ResponseEntity updateTask(@AuthenticationPrincipal User user, @RequestBody TaskDTO task) {
+        try {
+            TaskDTO t = this.taskService.updateTask(task, user);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(t);
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @DeleteMapping(path = "/{taskId}")
+    public ResponseEntity<String> deleteTask(@AuthenticationPrincipal User user, @PathVariable UUID taskId) {
+        try {
+            this.taskService.deleteTask(taskId, user);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body("Task " + taskId + " deleted.");
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @GetMapping(path = "/export")
-    public void exportCSV(HttpServletResponse servletResponse, @RequestHeader UUID userId) throws IOException {
+    public ResponseEntity exportCSV(@AuthenticationPrincipal User user, HttpServletResponse servletResponse, @RequestParam("workspace") UUID workspaceId) throws IOException {
         servletResponse.setContentType("text/csv");
         servletResponse.setCharacterEncoding("utf-8");
         servletResponse.addHeader("Content-Disposition","attachment; filename=\"tasks.csv\"");
-        taskService.exportCSV(servletResponse.getWriter(), userId);
+        try {
+            taskService.exportCSV(servletResponse.getWriter(), user, workspaceId);
+            return ResponseEntity.ok().build();
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
-
-    /*
-    @PostMapping(path = "/addTag")
-    public void addTag(@RequestParam("idTask") UUID idTask, @RequestParam("tag") String tag, @RequestHeader UUID userId) {
-        taskService.addTag(idTask, tag, userId);
-    }
-    */
-
-    /*
-    @PostMapping(path = "tag")
-    public List<TaskDTO> getTasksByTags(@RequestBody List<String> tags, @RequestHeader UUID userId) {
-        return taskService.getTasksByTags(tags, userId);
-    }
-     */
 }

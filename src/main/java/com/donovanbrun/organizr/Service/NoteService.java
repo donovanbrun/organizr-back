@@ -15,8 +15,8 @@ import java.util.UUID;
 @Service
 public class NoteService {
 
-    private NoteRepository noteRepository;
-    private UserService userService;
+    private final NoteRepository noteRepository;
+    private final UserService userService;
 
     @Autowired
     public NoteService(NoteRepository noteRepository, UserService userService) {

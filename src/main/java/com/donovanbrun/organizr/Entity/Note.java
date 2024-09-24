@@ -1,10 +1,10 @@
 package com.donovanbrun.organizr.Entity;
 
 import com.donovanbrun.organizr.dto.NoteDTO;
-import com.sun.istack.NotNull;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 import java.util.Date;
 import java.util.UUID;
 
@@ -17,7 +17,7 @@ import java.util.UUID;
 public class Note {
 
     @Id
-    @NotNull
+    @Column(nullable = false)
     private UUID id;
 
     @ManyToOne

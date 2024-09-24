@@ -2,7 +2,7 @@ package com.donovanbrun.organizr.Entity;
 
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.Date;
 import java.util.UUID;
 

@@ -1,13 +1,11 @@
 package com.donovanbrun.organizr.dto;
-import com.donovanbrun.organizr.Entity.Tag;
+
 import com.donovanbrun.organizr.Entity.Task;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -16,29 +14,24 @@ import java.util.UUID;
 public class TaskDTO {
 
     private UUID id;
-    private UUID userId;
-    private String name;
+    private UUID ownerId;
+    private UUID workspaceId;
+    private String title;
     private Date deadline;
     private String description;
     private String status;
     private Date creationDate;
     private Date updateDate;
-    //private List<String> tags;
 
     public TaskDTO(Task task) {
         this.id = task.getId();
-        this.userId = task.getUser().getId();
-        this.name = task.getName();
+        this.ownerId = task.getOwner().getId();
+        this.workspaceId = task.getWorkspace().getId();
+        this.title = task.getTitle();
         this.deadline = task.getDeadline();
         this.description = task.getDescription();
         this.status = task.getStatus();
         this.creationDate = task.getCreationDate();
         this.updateDate = task.getUpdateDate();
-
-        /*
-        this.tags = new ArrayList<>();
-        for (Tag tag : task.getTags()) {
-            tags.add(tag.getName());
-        }*/
     }
 }

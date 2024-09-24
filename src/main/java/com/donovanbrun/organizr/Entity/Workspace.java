@@ -2,23 +2,24 @@ package com.donovanbrun.organizr.Entity;
 
 import lombok.*;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.util.UUID;
 
 @Entity
-@Table(name = "Tag")
+@Table(name = "Workspace")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-public class Tag {
+@Builder
+public class Workspace {
 
     @Id
     @GeneratedValue
     private UUID id;
 
     private String name;
-
-    @ManyToOne
-    private User user;
 }

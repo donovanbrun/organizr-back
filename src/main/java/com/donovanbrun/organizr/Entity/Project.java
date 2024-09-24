@@ -1,17 +1,20 @@
 package com.donovanbrun.organizr.Entity;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import jakarta.persistence.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "Tag")
+@Table(name = "Project")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-public class Tag {
+public class Project {
 
     @Id
     @GeneratedValue
@@ -20,5 +23,6 @@ public class Tag {
     private String name;
 
     @ManyToOne
-    private User user;
+    @JoinColumn(nullable = false)
+    private Workspace workspace;
 }
