@@ -8,6 +8,7 @@ import com.donovanbrun.organizr.dto.LoginRequest;
 import com.donovanbrun.organizr.dto.RegisterRequest;
 import com.donovanbrun.organizr.dto.UserDTO;
 import com.donovanbrun.organizr.security.JwtUtil;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -60,8 +61,10 @@ public class UserService implements UserDetailsService {
                 .build();
         userRepository.save(user);
         var token = jwtUtil.generateToken(user);
+        var exp = jwtUtil.extractClaim(token, Claims.EXPIRATION, Long.class);
         return AuthenticationResponse.builder()
                 .token(token)
+                .expiration(exp)
                 .build();
     }
 
@@ -77,8 +80,10 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         var token = jwtUtil.generateToken(user);
+        var exp = jwtUtil.extractClaim(token, Claims.EXPIRATION, Long.class);
         return AuthenticationResponse.builder()
                 .token(token)
+                .expiration(exp)
                 .build();
     }
 
